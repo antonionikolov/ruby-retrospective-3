@@ -5,12 +5,9 @@ class Integer
   end
 
   def prime_factors
-    count, primes, number = 2, [], self
-    until number.abs == 1
-      primes << count if number.remainder(count).zero?
-      number.remainder(count).zero? ? number /= count : count += 1
-    end
-    primes
+    return [] if self == 1
+    new_divisor = 2.upto(abs).find { |x| remainder(x).zero? }
+    [new_divisor] + (abs / new_divisor).prime_factors
   end
 
   def harmonic
