@@ -11,8 +11,8 @@ class Integer
   end
 
   def harmonic
-    return if self <= 0
-    Rational((1..self).inject { |sum, n| sum + Rational(1, n) })
+    return if self < 1
+    Rational((1..self).reduce { |sum, n| sum + Rational(1, n) })
   end
 
   def digits
