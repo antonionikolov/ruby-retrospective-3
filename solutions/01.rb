@@ -15,12 +15,7 @@ class Integer
   end
 
   def digits
-    number, digits = abs, []
-    until number == 0
-      digits << number.remainder(10)
-      number /= 10
-    end
-    digits.reverse
+    abs.to_s.split('').map(&:to_i)
   end
 end
 
