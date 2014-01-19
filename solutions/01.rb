@@ -29,11 +29,7 @@ class Array
   end
 
   def drop_every(n)
-    remaining_elements = []
-    each_with_index do |item, i|
-      remaining_elements << item if (i + 1).remainder(n).nonzero?
-    end
-    remaining_elements
+    each_slice(n).flat_map { |sliced| sliced.take(n - 1) }
   end
 
   def combine_with(other)
