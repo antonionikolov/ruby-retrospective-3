@@ -95,18 +95,18 @@ class TodoList
   end
 
   def tasks_todo
-    select { |x| x.status == :todo }.count
+    select { |task| task.status == :todo }.count
   end
 
   def tasks_in_progress
-    select { |x| x.status == :current }.count
+    select { |task| task.status == :current }.count
   end
 
   def tasks_completed
-    select { |x| x.status == :done }.count
+    select { |task| task.status == :done }.count
   end
 
   def completed?
-    all? { |x| x.status == :done }
+    all? { |task| task.status == :done }
   end
 end
