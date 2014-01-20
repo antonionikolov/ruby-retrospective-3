@@ -33,18 +33,6 @@ module Asm
   end
 
   module JumpInstructions
-    def jmp_instruction(where)
-      if where.class == Symbol
-        execute_instructions(@operations_queue.index([:label, where]) + 1)
-      else
-        cut_tail = @operations_queue.size - where - 1
-        label_count = @operations_queue.reverse.drop(cut_tail).reverse.select do |label|
-          label[0] == :label
-        end.size
-        execute_instructions(where + label_count)
-      end
-    end
-
     def je_instruction(where)
       if @cmp == 0
         jmp_instruction(where)
@@ -100,15 +88,13 @@ module Asm
     end
 
     def initialize
-      @ax = 0
-      @bx = 0
-      @cx = 0
-      @dx = 0
+      @ax, @bx, @cx, @dx = 0, 0, 0, 0
       @operations_queue = []
       @cmp = 0
     end
 
-    instructions = [:mov, :inc, :dec, :cmp, :label, :jmp, :je, :jne, :jl, :jle, :jg, :jge]
+    instructions = [:mov, :inc, :dec, :cmp, :label,
+                    :jmp, :je, :jne, :jl, :jle, :jg, :jge]
 
     instructions.each do |instruction_name|
       define_method instruction_name do |*args|
@@ -117,19 +103,35 @@ module Asm
     end
 
     def execute_instructions(drop_index)
-      @operations_queue.drop(drop_index).each do |instruction|
-        if [:mov, :inc, :dec, :cmp].include? instruction[0]
-          send (instruction[0].to_s + "_instruction"), instruction[1], instruction[2]
-        elsif instruction[0] == :label
-          next
-        else
-          return send (instruction[0].to_s + "_instruction"), instruction[1]
-        end
+      @operations_queue.drop(drop_index).each do |clue|
+        next if clue[0] == :label
+        send (clue[0].to_s + "_instruction"), clue[1], clue[2] if check(clue)
+        return send (clue[0].to_s + "_instruction"), clue[1] if !check(clue)
       end
       [@ax, @bx, @cx, @dx]
     end
 
+    def check(clue)
+      [:mov, :inc, :dec, :cmp].include? clue[0]
+    end
+
     private
+
+    def jmp_instruction(where)
+      if where.class == Symbol
+        execute_instructions(@operations_queue.index([:label, where]) + 1)
+      else
+        execute_instructions(where + label_count(where))
+      end
+    end
+
+    def label_count(where)
+      cut_tail = @operations_queue.size - where - 1
+      label_count =
+        @operations_queue.reverse.drop(cut_tail).reverse.select do |label|
+          label[0] == :label
+        end.size
+    end
 
     include OperationInstructions
     include JumpInstructions
