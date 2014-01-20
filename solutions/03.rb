@@ -112,6 +112,18 @@ module Graphics
     def hash
       [x, y].hash
     end
+
+    def +(other_point)
+      Point.new x + other_point.x, y + other_point.y
+    end
+
+    def -(other_point)
+      Point.new x - other_point.x, y - other_point.y
+    end
+
+    def /(divisor)
+      Point.new x / divisor, y / divisor
+    end
   end
 
   class Line
@@ -142,26 +154,22 @@ module Graphics
 
     alias_method :eql?, :==
 
-    def draw_by_y(canvas, length_x, length_y)
-      from.y.upto(to.y) do |y|
-        x = (from.x + length_x * (y - from.y) / length_y).abs
-        canvas.set_pixel(x, y)
-      end
-    end
-
-    def draw_by_x(canvas, length_x, length_y)
-      from.x.upto(to.x) do |x|
-        y = (from.y + length_y * (x - from.x) / length_x).abs
-        canvas.set_pixel(x, y)
-      end
-    end
-
     def draw(canvas)
-      length_x, length_y = to.x - from.x, to.y - from.y
-      if length_x == 0 || length_y >= length_x
-        draw_by_y(canvas, length_x, length_y)
+      if from == to
+        canvas.set_pixel from.x, from.y
       else
-        draw_by_x(canvas, length_x, length_y)
+        rasterize_on canvas
+      end
+    end
+
+    def rasterize_on(canvas)
+      step_count    = [(to.x - from.x).abs, (to.y - from.y).abs].max
+      delta         = (to - from) / step_count.to_r
+      current_point = from
+
+      step_count.succ.times do
+        canvas.set_pixel(current_point.x.round, current_point.y.round)
+        current_point = current_point + delta
       end
     end
 
@@ -220,7 +228,7 @@ module Graphics
       if left.y < right.y
         right
       else
-        Point.new left.x, right.y
+        Point.new right.x, left.y
       end
     end
 
