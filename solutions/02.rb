@@ -15,52 +15,42 @@ class TodoTask
     @tags = tags
   end
 end
-#
+
 class Criteria
-  def initialize(single, both, no)
-    @single = single
-    @both = both
-    @no = no
+  attr_reader :allowed
+
+  def initialize(allowed)
+    @allowed = allowed
   end
 
-  attr_accessor :single
-  attr_accessor :no
-  attr_accessor :both
+  class << self
+    def status(status)
+      Criteria.new -> task { task.status == status }
+    end
 
-  def Criteria.status(status_kind)
-    Criteria.new [status_kind], [], []
-  end
+    def priority(priority)
+      Criteria.new -> task { task.priority == priority }
+    end
 
-  def Criteria.priority(priority_kind)
-    Criteria.new [priority_kind], [], []
-  end
-
-  def Criteria.tags(tags_kind)
-    Criteria.new tags_kind, [], []
-  end
-
-  def |(other)
-    Criteria.new @single | other.single,
-                 @both | other.both,
-                 @no | other.no
+    def tags(tags)
+      Criteria.new -> task { (task.tags & tags).length == tags.length }
+    end
   end
 
   def &(other)
-    if (@single == [] or other.single == []) then
-      self | other
-    else
-      Criteria.new @single & other.single,@both & other.both,@no | other.no
+    Criteria.new -> task do
+      allowed.(task) && other.allowed.(task)
+    end
+  end
+
+  def |(other)
+    Criteria.new -> task do
+      allowed.(task) || other.allowed.(task)
     end
   end
 
   def !
-    Criteria.new @no,
-                 @both,
-                 @single | @both
-  end
-
-  def Criteria.ddd(task, task_array)
-    task.tags.each { |x| task_array << x }
+    Criteria.new -> task { not allowed.(task) }
   end
 end
 
@@ -71,27 +61,23 @@ class TodoList
     @to_do_tasks.each(&block)
   end
 
-  def initialize(members)
-    @to_do_tasks = members
+  attr_accessor :to_do_tasks
+
+  def initialize(to_do_tasks)
+    @to_do_tasks = to_do_tasks
   end
 
   def self.parse(list)
-    lines = list.sprlit("\n")
+    lines = list.split("\n")
     TodoList.new lines.map { |line| TodoTask.set_task(line) }
   end
 
-  def filter(criteria_kind)
-    sublist, arr = [], []
-    each { |task| arr << task.status << task.priority | Criteria.ddd(task, arr)
-      filter_tasks(task, arr, criteria_kind, sublist) | arr = [] }
-    TodoList.new sublist
+  def filter(criteria)
+    TodoList.new @to_do_tasks.select { |task| criteria.allowed.(task) }
   end
 
-  def adjoin(list)
-    adjoin_list = []
-    each { |x| adjoin_list << x }
-    list.each { |x| adjoin_list << x }
-    adjoin_list
+  def adjoin(other)
+    TodoList.new (@to_do_tasks + other.to_do_tasks).uniq
   end
 
   def tasks_todo
