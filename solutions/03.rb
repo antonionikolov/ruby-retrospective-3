@@ -21,18 +21,23 @@ module Graphics
     end
 
     def render_as(renderer)
-      renderer.new.set_render(self)
+      renderer.new.render(self)
     end
   end
 
   module Renderers
     class Ascii
-      def set_render(pane)
+      def set_panel(pane, panel, x)
+        panel << "\n" if (x).remainder(pane.width).zero? and not x == 0
+        panel << '-'
+        panel[panel.length - 1] = '@' if pane.pixel_at? x % pane.width, x / pane.width
+        panel
+      end
+
+      def render(pane)
         panel = ""
         0.upto(pane.width * pane.height - 1) do |x|
-          panel += "\n" if (x).remainder(pane.width).zero? and not x == 0
-          panel += '-'
-          panel[panel.length - 1] = '@' if pane.pixel_at? x % pane.width, x / pane.width
+          panel = set_panel(pane, panel, x)
         end
         panel
       end
@@ -81,7 +86,7 @@ module Graphics
         pixel
       end
 
-      def set_render(pane)
+      def render(pane)
         panel = PANEL_FIRST_PART
         0.upto(pane.width * pane.height - 1) do |x|
            panel += set_canvas(pane, x)
@@ -163,9 +168,8 @@ module Graphics
     end
 
     def rasterize_on(canvas)
-      step_count    = [(to.x - from.x).abs, (to.y - from.y).abs].max
-      delta         = (to - from) / step_count.to_r
-      current_point = from
+      step_count = [(to.x - from.x).abs, (to.y - from.y).abs].max
+      delta, current_point = (to - from) / step_count.to_r, from
 
       step_count.succ.times do
         canvas.set_pixel(current_point.x.round, current_point.y.round)
