@@ -178,7 +178,7 @@ module Graphics
     end
 
     def hash
-      [from.hash, to.hash].hash
+      [from, to].hash
     end
   end
 
@@ -250,7 +250,7 @@ module Graphics
     end
 
     def hash
-      [top_left.hash, bottom_right.hash, bottom_left.hash].hash
+      [top_left, bottom_right, bottom_left].hash
     end
   end
 end
