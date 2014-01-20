@@ -77,11 +77,11 @@ module Graphics
                   </html>"
 
       def set_canvas(pane, count, pixel = "")
-        pixel += "<br>\n" if (count).remainder(pane.width).zero? and not count == 0
+        pixel << "<br>\n" if (count).remainder(pane.width).zero? and not count == 0
         if pane.pixel_at? count % pane.width, count / pane.width
-          pixel += "<b></b>"
+          pixel << "<b></b>"
         else
-          pixel += "<i></i>"
+          pixel << "<i></i>"
         end
         pixel
       end
@@ -91,7 +91,7 @@ module Graphics
         0.upto(pane.width * pane.height - 1) do |x|
            panel += set_canvas(pane, x)
         end
-        panel += PANEL_SECOND_PART
+        panel << PANEL_SECOND_PART
       end
     end
   end
