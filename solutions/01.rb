@@ -33,11 +33,11 @@ class Array
   end
 
   def combine_with(other)
-    short = if size <= other.size then size else other.size end
+    short, long  = length <= other.length ? [self, other] : [other, self]
+
     both = []
-    (0..short - 1).each { |i| both << self[i] & both << other[i] }
-    (short..other.size - 1).each { |i| both << other[i] } if short < other.size
-    (short..size - 1).each { |i| both << self[i] } if short < size
+    (0...short.length).each { |i| both << self[i] << other[i] }
+    (short.length..long.length - 1).each { |i| both << long[i] }
     both
   end
 end
