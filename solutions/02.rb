@@ -1,27 +1,18 @@
 class TodoTask
-  attr_accessor :status
-  attr_accessor :description
-  attr_accessor :priority
-  attr_accessor :tags
+  attr_accessor :status, :description, :priority, :tags
 
-  def TodoTask.set_task(current_task)
-      task = TodoTask.new
-      unformatted_task = current_task.split("|")
-      TodoTask.set_task_methods(task, unformatted_task)
-      task
+  def self.set_task(current_task)
+    status, description, priority, tags = current_task.split('|').map(&:strip)
+    tags = tags.nil? ? [] : tags.split(', ')
+    
+    TodoTask.new status, description, priority, tags
   end
 
-  def TodoTask.set_task_methods(task, get_task)
-    task.status = get_task[0].strip.downcase.to_sym
-    task.description = get_task[1].strip
-    task.priority = get_task[2].strip.downcase.to_sym
-    TodoTask.set_tags(task, get_task[3])
-  end
-
-  def TodoTask.set_tags(task, get_tags)
-    task.tags = []
-    return task.tags if get_tags == nil
-    get_tags.split(",").each { |x| task.tags << x.strip }
+  def initialize(status, description, priority, tags)
+    @status = status.downcase.to_sym
+    @description = description
+    @priority = priority.downcase.to_sym
+    @tags = tags
   end
 end
 #
@@ -82,22 +73,20 @@ class TodoList
 
   def initialize(members)
     @to_do_tasks = members
-    #members.each { |s| p s }
   end
 
-  def TodoList.parse(list)
-    to_do_tasks = []
-    list.split("\n").select { |x| to_do_tasks << TodoTask.set_task(x) }
-    TodoList.new to_do_tasks
+  def self.parse(list)
+    lines = list.sprlit("\n")
+    TodoList.new lines.map { |line| TodoTask.set_task(line) }
   end
-  #
+
   def filter(criteria_kind)
     sublist, arr = [], []
     each { |task| arr << task.status << task.priority | Criteria.ddd(task, arr)
       filter_tasks(task, arr, criteria_kind, sublist) | arr = [] }
     TodoList.new sublist
   end
-  #
+
   def adjoin(list)
     adjoin_list = []
     each { |x| adjoin_list << x }
