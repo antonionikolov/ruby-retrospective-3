@@ -68,7 +68,7 @@ class TodoList
   include Enumerable
 
   def each(&block)
-    @to_do_tasks.each { |member| block.call(member) }
+    @to_do_tasks.each(&block)
   end
 
   def initialize(members)
