@@ -4,7 +4,7 @@ class TodoTask
   def self.set_task(current_task)
     status, description, priority, tags = current_task.split('|').map(&:strip)
     tags = tags.nil? ? [] : tags.split(', ')
-    
+
     TodoTask.new status, description, priority, tags
   end
 
